@@ -49,3 +49,62 @@ app.post('/addcard', async (req, res) => {
         res.status(500).json({message: 'Server error - could not add card '+card_name});
     }
 });
+
+app.get('/tasks', async (req, res) => {
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        const [rows] = await connection.execute('SELECT * FROM rptasks');
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error retrieving tasks' });
+    }
+});
+
+app.post('/addtask', async (req, res) => {
+    const { task_name, task_status } = req.body;
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute(
+            'INSERT INTO rptasks (task_name, task_status) VALUES (?, ?)',
+            [task_name, task_status]
+        );
+        res.json({ message: 'Task added successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error adding task' });
+    }
+});
+
+
+
+app.put('/updatetask/:id', async (req, res) => {
+    const { id } = req.params;
+    const { task_name, task_status } = req.body;
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute(
+            'UPDATE rptasks SET task_name = ?, task_status = ? WHERE id = ?',
+            [task_name, task_status, id]
+        );
+        res.json({ message: 'Task updated successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error updating task' });
+    }
+});
+
+app.delete('/deletetask/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        await connection.execute(
+            'DELETE FROM rptasks WHERE id = ?',
+            [id]
+        );
+        res.json({ message: 'Task deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error deleting task' });
+    }
+});

@@ -108,3 +108,34 @@ app.delete('/deletetask/:id', async (req, res) => {
         res.status(500).json({ message: 'Error deleting task' });
     }
 });
+
+app.get('/allkpop', async (req, res) => {
+    try {
+        let connection = await mysql.createConnection(dbConfig);
+        const [rows] = await connection.execute('SELECT * FROM kpop');
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error for allkpop' });
+    }
+});
+
+// Add a new KPOP group
+app.post('/addkpop', async (req, res) => {
+    const { group_name, group_pic } = req.body;
+    try {
+        let connection = await mysql.createConnection(dbConfig);
+        await connection.execute(
+            'INSERT INTO kpop (group_name, group_pic) VALUES (?, ?)',
+            [group_name, group_pic]
+        );
+        res.status(201).json({
+            message: 'KPOP group ' + group_name + ' added successfully.'
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            message: 'Server error - could not add KPOP group ' + group_name
+        });
+    }
+});
